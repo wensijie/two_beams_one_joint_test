@@ -64,11 +64,11 @@ for i in range(1, beam_number+1):
     # satellite2
     corner_marker_sat2 = satellite_2.Markers.create(name = 'corner_marker', location = corner_2_location.tolist(), orientation = [0,0,0])
     satellite_2.material_type = material_satellite
-    satellite_2.Geometries.createBlock(name = name_satellite_2 + 'body',  corner_marker = corner_marker_sat2, x = 1, y =1, z = 1)
+    satellite_2.Geometries.createBlock(name = name_satellite_2 + 'body',  corner_marker = corner_marker_sat2, x = 1, y = 1, z = 1)
     # satellite3
     corner_marker_sat3 = satellite_3.Markers.create(name = 'corner_marker', location = corner_3_location.tolist(), orientation = [0,0,0])
     satellite_3.material_type = material_satellite
-    satellite_3.Geometries.createBlock(name = name_satellite_3 + 'body',  corner_marker = corner_marker_sat3, x = 1, y =1, z = 1)
+    satellite_3.Geometries.createBlock(name = name_satellite_3 + 'body',  corner_marker = corner_marker_sat3, x = 1, y = 1, z = 1)
 
     # 添加卫星和桁架的绑定
     name_Joint_1 = 'FixedJoint_' + str(i) + '_1'
@@ -240,14 +240,74 @@ for i in range(1, beam_number+1):
     out_vel_y_3 = Model.DataElements.createStateVariable(name = out_vel_y_3_name, initial_condition = 0, function = vel_y_3_name)
     out_vel_z_3 = Model.DataElements.createStateVariable(name = out_vel_z_3_name, initial_condition = 0, function = vel_z_3_name)
 
-    PInput = Model.DataElements.createPInput(name = 'INPUT_beam_' + str(i), variable = [Fx_1, Fy_1, Fz_1, Tx_1, Ty_1, Tz_1, Fx_2, Fy_2, Fz_2, Tx_2, Ty_2, Tz_2, Fx_3, Fy_3, Fz_3, Tx_3, Ty_3, Tz_3])
-    POutput = Model.DataElements.createPOutput(name = 'OUTPUT_beam_' + str(i), variable = [out_pos_x_1, out_pos_y_1, out_pos_z_1, out_vel_x_1, out_vel_y_1,out_vel_z_1, out_pos_x_2, out_pos_y_2, out_pos_z_2, out_vel_x_2, out_vel_y_2, out_vel_z_2, out_pos_x_3, out_pos_y_3, out_pos_z_3, out_vel_x_3, out_vel_y_3, out_vel_z_3])
-
-    satellite_1.density = material_satellite.density
-    satellite_2.density = material_satellite.density
-    satellite_3.density = material_satellite.density
-
     
+    # 角度相关测量 直接测量卫星的姿态 输出为四元数
+    
+    angle_ref = satellite_2.Markers.create(name = 'angle_ref_' + str(i), location = satellite_2.Markers['cm'].location, orientation = [0,0,0] )
+    orient_w_name = 'sat_' + str(i) + '_2_orient_w'
+    orient_x_name = 'sat_' + str(i) + '_2_orient_x'
+    orient_y_name = 'sat_' + str(i) + '_2_orient_y'
+    orient_z_name = 'sat_' + str(i) + '_2_orient_z'
+    angleVel_x_name = 'sat_' + str(i) + '_2_angleVel_x'
+    angleVel_y_name = 'sat_' + str(i) + '_2_angleVel_y'
+    angleVel_z_name = 'sat_' + str(i) + '_2_angleVel_z'
+
+    # 基于类
+    # orient_w = Model.Measures.createOrient(name = orient_w_name, characteristic = 'euler_parameters', component='param_1_component', to_frame = marker_ref_sat2, from_frame = marker_origin)
+    # orient_x = Model.Measures.createOrient(name = orient_x_name, characteristic = 'euler_parameters', component='param_2_component', to_frame = marker_ref_sat2, from_frame = marker_origin)
+    # orient_y = Model.Measures.createOrient(name = orient_y_name, characteristic = 'euler_parameters', component='param_3_component', to_frame = marker_ref_sat2, from_frame = marker_origin)
+    # orient_z = Model.Measures.createOrient(name = orient_z_name, characteristic = 'euler_parameters', component='param_4_component', to_frame = marker_ref_sat2, from_frame = marker_origin)
+
+    # angleVel_x = Model.Measures.createObject(name = angleVel_x_name, characteristic = 'angular_velocity', component = 'x_component', object = marker_ref_sat2)
+    # angleVel_y = Model.Measures.createObject(name = angleVel_y_name, characteristic = 'angular_velocity', component = 'y_component', object = marker_ref_sat2)
+    # angleVel_z = Model.Measures.createObject(name = angleVel_z_name, characteristic = 'angular_velocity', component = 'z_component', object = marker_ref_sat2)
+
+    # Adams.execute_cmd("measure_display delete mea_display = ." + Model.name + "." + orient_w_name)
+    # Adams.execute_cmd("measure_display delete mea_display = ." + Model.name + "." + orient_x_name)
+    # Adams.execute_cmd("measure_display delete mea_display = ." + Model.name + "." + orient_y_name)
+    # Adams.execute_cmd("measure_display delete mea_display = ." + Model.name + "." + orient_z_name)
+    # Adams.execute_cmd("measure_display delete mea_display = ." + Model.name + "." + angleVel_x_name)
+    # Adams.execute_cmd("measure_display delete mea_display = ." + Model.name + "." + angleVel_y_name)
+    # Adams.execute_cmd("measure_display delete mea_display = ." + Model.name + "." + angleVel_z_name)
+
+    # 基于命令行
+    cmd = 'measure create point measure_name=.' + Model.name + '.' + angleVel_x_name + ' point= ' + angle_ref.name + ' characteristic = "angular_velocity"  component =  "x_component"      comments=""  create_measure_display = no'
+    Adams.execute_cmd(cmd)
+    cmd = 'measure create point measure_name=.' + Model.name + '.' + angleVel_y_name + ' point= ' + angle_ref.name + ' characteristic = "angular_velocity"  component =  "y_component"      comments=""  create_measure_display = no'
+    Adams.execute_cmd(cmd)
+    cmd = 'measure create point measure_name=.' + Model.name + '.' + angleVel_z_name + ' point= ' + angle_ref.name + ' characteristic = "angular_velocity"  component =  "z_component"      comments=""  create_measure_display = no'
+    Adams.execute_cmd(cmd)
+
+    cmd = 'measure create orient  measure_name =.' + Model.name + '.' + orient_w_name + ' component =  "param_1_component"  characteristic = euler_parameters  to_frame =' +  angle_ref.name + ' comments="" create_measure_display = no '
+    Adams.execute_cmd(cmd)
+    cmd = 'measure create orient  measure_name =.' + Model.name + '.' + orient_x_name + ' component =  "param_2_component"  characteristic = euler_parameters  to_frame =' +  angle_ref.name + ' comments="" create_measure_display = no '
+    Adams.execute_cmd(cmd)
+    cmd = 'measure create orient  measure_name =.' + Model.name + '.' + orient_y_name + ' component =  "param_3_component"  characteristic = euler_parameters  to_frame =' +  angle_ref.name + ' comments="" create_measure_display = no '
+    Adams.execute_cmd(cmd)
+    cmd = 'measure create orient  measure_name =.' + Model.name + '.' + orient_z_name + ' component =  "param_4_component"  characteristic = euler_parameters  to_frame =' +  angle_ref.name + ' comments="" create_measure_display = no '
+    Adams.execute_cmd(cmd)
+
+    out_orient_w_name = 'orient_w_2_' + str(i) 
+    out_orient_x_name = 'orient_x_2_' + str(i) 
+    out_orient_y_name = 'orient_y_2_' + str(i)
+    out_orient_z_name = 'orient_z_2_' + str(i) 
+    out_angleVel_x_name = 'angleVel_x_2_' + str(i)
+    out_angleVel_y_name = 'angleVel_y_2_' + str(i)
+    out_angleVel_z_name = 'angleVel_z_2_' + str(i)
+
+    out_orient_w = Model.DataElements.createStateVariable(name = out_orient_w_name, initial_condition = 0, function = orient_w_name)
+    out_orient_x = Model.DataElements.createStateVariable(name = out_orient_x_name, initial_condition = 0, function = orient_x_name)
+    out_orient_y = Model.DataElements.createStateVariable(name = out_orient_y_name, initial_condition = 0, function = orient_y_name)
+    out_orient_z = Model.DataElements.createStateVariable(name = out_orient_z_name, initial_condition = 0, function = orient_z_name)
+    out_angleVel_x = Model.DataElements.createStateVariable(name = out_angleVel_x_name, initial_condition = 0, function = angleVel_x_name)
+    out_angleVel_y = Model.DataElements.createStateVariable(name = out_angleVel_y_name, initial_condition = 0, function = angleVel_y_name)
+    out_angleVel_z = Model.DataElements.createStateVariable(name = out_angleVel_z_name, initial_condition = 0, function = angleVel_z_name)
+    
+    
+    PInput = Model.DataElements.createPInput(name = 'INPUT_beam_' + str(i), variable = [Fx_1, Fy_1, Fz_1, Tx_1, Ty_1, Tz_1, Fx_2, Fy_2, Fz_2, Tx_2, Ty_2, Tz_2, Fx_3, Fy_3, Fz_3, Tx_3, Ty_3, Tz_3])
+    POutput = Model.DataElements.createPOutput(name = 'OUTPUT_beam_' + str(i), variable = [out_pos_x_1, out_pos_y_1, out_pos_z_1, out_vel_x_1, out_vel_y_1,out_vel_z_1, out_pos_x_2, out_pos_y_2, out_pos_z_2, out_vel_x_2, out_vel_y_2, out_vel_z_2, out_pos_x_3, out_pos_y_3, out_pos_z_3, out_vel_x_3, out_vel_y_3, out_vel_z_3, out_orient_w, out_orient_x, out_orient_y, out_orient_z, out_angleVel_x, out_angleVel_y, out_angleVel_z])
+
+
 
 
 
