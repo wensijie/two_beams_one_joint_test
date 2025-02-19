@@ -12,6 +12,7 @@ beam_length = 29.64 # 柔性梁的长度, 轴向沿Z轴
 Model = Adams.getCurrentModel()
 Units = Adams.defaults.units.setUnits(length = 'meter', mass = 'kg', time = 'second',  angle = 'radians', force = 'newton', frequency = 'hz')
 material_satellite = Model.Materials.create(name = 'Sat_material', density = 120, youngs_modulus = 1.1E+11, poissons_ratio = 0.33)
+material_nonMass = Model.Materials.create(name = 'nonMass', density = 1E-4, youngs_modulus = 1.1E+11, poissons_ratio = 0.33)
 # 在设置时默认无重力
 color_list = ['RED', 'GREEN', 'YELLOW', 'PINK', 'ORANGE', 'PINK']
 
@@ -57,9 +58,10 @@ for i in range(1, beam_number+1):
     corner_2_location = np.array(sat_attach.location) + np.array(marker_ref_sat2.location) - np.array([0.5, 0.5, 0.5])
     corner_3_location = np.array(sat_attach.location) + np.array(marker_ref_sat3.location) - np.array([0.5, 0.5, 0.5])
     print(marker_ref_sat1.location)
+    # 中间节点为卫星实体，两侧节点为无质量单元
     # satellite1
     corner_marker_sat1 = satellite_1.Markers.create(name = 'corner_marker', location = corner_1_location.tolist(), orientation = [0,0,0])
-    satellite_1.material_type = material_satellite
+    satellite_1.material_type = material_nonMass
     satellite_1.Geometries.createBlock(name = name_satellite_1 + 'body',  corner_marker = corner_marker_sat1, x = 1, y =1, z = 1)
     # satellite2
     corner_marker_sat2 = satellite_2.Markers.create(name = 'corner_marker', location = corner_2_location.tolist(), orientation = [0,0,0])
@@ -67,7 +69,7 @@ for i in range(1, beam_number+1):
     satellite_2.Geometries.createBlock(name = name_satellite_2 + 'body',  corner_marker = corner_marker_sat2, x = 1, y = 1, z = 1)
     # satellite3
     corner_marker_sat3 = satellite_3.Markers.create(name = 'corner_marker', location = corner_3_location.tolist(), orientation = [0,0,0])
-    satellite_3.material_type = material_satellite
+    satellite_3.material_type = material_nonMass
     satellite_3.Geometries.createBlock(name = name_satellite_3 + 'body',  corner_marker = corner_marker_sat3, x = 1, y = 1, z = 1)
 
     # 添加卫星和桁架的绑定
