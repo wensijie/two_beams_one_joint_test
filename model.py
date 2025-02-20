@@ -27,15 +27,32 @@ for i in range(1, beam_number+1):
 
     beam = Model.Parts.createFlexBody(name = beam_name, modal_neutral_file_name = mnf_path, location = beam_pos)
 
-# 球铰建立
-for i in range(1, beam_number):
+# 建立无质量的刚体并添加球铰
+for i in range(1, beam_number): 
+    part_name = 'nonMass_' + str(i)
     beam_i = Adams.stoo('beam' + str(i))
     beam_j = Adams.stoo('beam' + str(i+1))
-
     marker_i = beam_i.Markers['INT_NODE_27181']
     marker_j = beam_j.Markers['INT_NODE_27180']
+    spericalLocation = np.array(beam_i.location) + np.array(marker_i.location)
+    
+    nonMass = Model.Parts.createRigidBody(name = part_name)
+    Marker_center = nonMass.Markers.create(name = 'center', location = spericalLocation.tolist(), orientation = [0, 0, 0])
+    nonMass.Geometries.createEllipsoid(name = 'ellipsoid', center_marker = Marker_center, x_scale_factor = 0.5, y_scale_factor = 0.5, z_scale_factor = 0.5)
 
-    spherical_i_j = Model.Constraints.createSpherical(name = 'spherical' + str(i) + '_' + str(i+1), i_part = beam_i, j_part = beam_j, location = marker_i.location, orientation = [0,0,0])
+    spherical_i_nonMass = Model.Constraints.createSpherical(name = 'spherical_' + str(i) +  '_non', i_part = beam_i, j_part = nonMass, location = Marker_center.location, orientation = [0, 0, 0])
+
+    spherical_j_nonMass = Model.Constraints.createSpherical(name = 'spherical_non_' + str(i+1), i_part = nonMass, j_part = beam_j, location = Marker_center.location, orientation = [0, 0, 0])
+
+# # 球铰建立
+# for i in range(1, beam_number):
+#     beam_i = Adams.stoo('beam' + str(i))
+#     beam_j = Adams.stoo('beam' + str(i+1))
+
+#     marker_i = beam_i.Markers['INT_NODE_27181']
+#     marker_j = beam_j.Markers['INT_NODE_27180']
+
+#     spherical_i_j = Model.Constraints.createSpherical(name = 'spherical' + str(i) + '_' + str(i+1), i_part = beam_i, j_part = beam_j, location = marker_i.location, orientation = [0,0,0])
 
 
 # 建立卫星
@@ -50,7 +67,7 @@ for i in range(1, beam_number+1):
     marker_ref_sat2 = sat_attach.Markers['INT_NODE_27182']
     marker_ref_sat3 = sat_attach.Markers['INT_NODE_27184']
 
-    satellite_1 = Model.Parts.createRigidBody(name = name_satellite_1, )
+    satellite_1 = Model.Parts.createRigidBody(name = name_satellite_1)
     satellite_2 = Model.Parts.createRigidBody(name = name_satellite_2)
     satellite_3 = Model.Parts.createRigidBody(name = name_satellite_3)
     
