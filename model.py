@@ -36,7 +36,7 @@ for i in range(1, beam_number):
     marker_j = beam_j.Markers['INT_NODE_27180']
     spericalLocation = np.array(beam_i.location) + np.array(marker_i.location)
     
-    nonMass = Model.Parts.createRigidBody(name = part_name)
+    nonMass = Model.Parts.createRigidBody(name = part_name, material_type = material_nonMass)
     Marker_center = nonMass.Markers.create(name = 'center', location = spericalLocation.tolist(), orientation = [0, 0, 0])
     nonMass.Geometries.createEllipsoid(name = 'ellipsoid', center_marker = Marker_center, x_scale_factor = 0.5, y_scale_factor = 0.5, z_scale_factor = 0.5)
 
